@@ -12,6 +12,8 @@ p <- 0.15
 ve <- 0.9
 # 180 (fixed)
 trial_length <- 180
+# 500 (fixed)
+session <- 500
 
 ########## tibble for the result ##########
 result <- tibble(
@@ -20,7 +22,7 @@ result <- tibble(
 
 ########## simulation ##########
 # 500 simulations
-for (i in 1:500) {
+for (i in 1:session) {
   
   print(i)
   
