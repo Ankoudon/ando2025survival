@@ -97,4 +97,4 @@ for (i in 1:500) {
 }
 
 # save the result
-write_csv(result, paste0("~/desktop/p_", p, "_ve_", ve, "_cox_bias.csv"))
+write_csv(result, paste0("~/desktop/reserach/result/p_", p, "_ve_", ve, "_cox_bias.csv"))
