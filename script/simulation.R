@@ -9,7 +9,7 @@ n <- 10000
 # {0.05, 0.1, 0.15}
 p <- 0.15
 # {0.3, 0.6, 0.9}
-ve <- 0.9
+ve <- 0.3
 # 180 (fixed)
 trial_length <- 180
 # 500 (fixed)
@@ -99,4 +99,5 @@ for (i in 1:session) {
 }
 
 # save the result
-write_csv(result, paste0("~/desktop/reserach/result/p_", p, "_ve_", ve, "_cox_bias.csv"))
+write_csv(result, paste0("~/desktop/research/cox-correlated-exposure-bias/result/p_",
+                         p, "_ve_", ve, "_cox_bias.csv"))

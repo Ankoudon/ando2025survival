@@ -29,7 +29,7 @@ r <- function(p, ve) {
 
 read_surv_data <- function(p, ve) {
   
-  data <- read_csv(paste0("~/desktop/p_", p, "_ve_", ve, ".csv"))
+  data <- read_csv(paste0("~/desktop/research/cox-correlated-exposure-bias/result/p_", p, "_ve_", ve, "_cox_bias.csv"))
   
   # data for ve_hr
   data_ve_hr <- data |> 
@@ -56,7 +56,7 @@ read_surv_data <- function(p, ve) {
   
   # convert the model to factor
   data_ve <- data_ve |>
-    mutate(model = factor(model, levels = c("ve", "ve_adj")))
+    mutate(model = factor(model, levels = c("ve_hr", "ve_adj")))
   
   return(data_ve)
   
@@ -198,6 +198,7 @@ data <- bind_rows(
   data_015 %>% mutate(p = 0.15)
 )
 
+# 12 by 8
 fig.4 <- data |>
   ggplot(aes(x = ve, y = ve_hr / ve, color = factor(p))) +
   geom_line(linewidth = 2) +
