@@ -1,68 +1,108 @@
 ########## library ##########
+
 library(tidyverse)
 library(latex2exp)
 
-########## function to calculate the formula (4) without m ##########
-r <- function(p, ve) {
+########## function to calculate equation (15) ##########
+
+# p : per-contact transmissibility 
+# ve : vaccine efficacy
+
+exposure_prob_ratio <- function(p, ve) {
   
-  # p: per-contact transmissibility after vaccination
   p_ve <- p * (1 - ve)
   
-  sum <- 0
+  sum_num <- 0
+  sum_deno <- 0
   
-  sum <- sum + 1
-  sum <- sum + pgeom(0, 1 / 3, lower.tail = FALSE) * (1 - p_ve) ^ (1)
-  sum <- sum + pgeom(1, 1 / 3, lower.tail = FALSE) * (1 - p_ve) ^ (2)
+  sum_num <- sum_num + 1
+  sum_deno <- sum_deno + 1
   
-  for (i in 2:50) {
+  sum_num <- sum_num + pgeom(0, 1 / 3, lower.tail = FALSE) * (1 - p_ve) ^ (1)
+  sum_deno <- sum_deno + pgeom(0, 1 / 3, lower.tail = FALSE) * (1 - p) ^ (1)
+  
+  sum_num <- sum_num + pgeom(1, 1 / 3, lower.tail = FALSE) * (1 - p_ve) ^ (2)
+  sum_deno <- sum_deno + pgeom(1, 1 / 3, lower.tail = FALSE) * (1 - p) ^ (2)
+  
+  for (i in 2:10) {
     
     probability <- pgeom(i, 1 / 3, lower.tail = FALSE) * (1 - p_ve) ^ (i + 1)
-    sum <- sum + probability
+    sum_num <- sum_num + probability
+    
+    probability <- pgeom(i, 1 / 3, lower.tail = FALSE) * (1 - p) ^ (i + 1)
+    sum_deno <- sum_deno + probability
     
   }
   
-  return(sum)
+  return(sum_num / sum_deno)
   
 }
 
-########## function to read the simlation data ##########
+########## function to calculate equation (16) and (17) ##########
+
+# p : per-contact transmissibility
+# ve_per : per-contact vaccine efficacy
+# ve_cox : cox based vaccine efficacy
+
+ve_eq <- function(p, ve_per, ve_cox) {
+  equ <- 1 - (1 - ve_per) * exposure_prob_ratio(p, ve_per) - ve_cox
+  return(equ)
+}
+
+
+########## function to read the simulation data ##########
 
 read_surv_data <- function(p, ve) {
   
-  data <- read_csv(paste0("~/desktop/research/cox-correlated-exposure-bias/result/p_", p, "_ve_", ve, "_cox_bias.csv"))
+  data <- read_csv(
+    paste0(
+      "~/desktop/research/cox-correlated-exposure-bias/result/p_", p,
+      "_ve_", ve, "_cox_bias.csv"))
   
-  # data for ve_hr
-  data_ve_hr <- data |> 
+  # data for ve_cox
+  data_ve_cox <- data |> 
     mutate("Per-contact transmisibility" = p,
-           "ve" = 1 - VE_HR,
-           "model" = "ve_hr") |>
+           "ve" = ve_cox,
+           "model" = "ve_cox") |>
     select("Per-contact transmisibility",
            "ve",
            "model")
   
-  # data for ve_hr_adj
-  data_ve_adj <- data |> 
+  ve_cox_vec <- data_ve_cox$ve
+  
+  ve_per_vec <- c()
+  
+  for (i in 1:length(ve_cox_vec)) {
+    
+    ve_per_value <- uniroot(
+      ve_eq, c(0, 1), p = p, ve_cox = ve_cox_vec[i])$root
+    ve_per_vec <- c(ve_per_value, ve_per_vec)
+    
+  }
+  
+  # data for ve_per
+  data_ve_per <- data |> 
     mutate("Per-contact transmisibility" = p,
-           "ve" = 1 - VE_HR * (r(p, 0)/r(p, ve)),
-           "model" = "ve_adj") |>
+           "ve" = ve_per_vec,
+           "model" = "ve_per") |>
     select("Per-contact transmisibility",
            "ve",
            "model")
   
   # bind the two data
   data_ve <- bind_rows(
-    data_ve_hr,
-    data_ve_adj) 
+    data_ve_cox,
+    data_ve_per) 
   
   # convert the model to factor
   data_ve <- data_ve |>
-    mutate(model = factor(model, levels = c("ve_hr", "ve_adj")))
+    mutate(model = factor(model, levels = c("ve_cox", "ve_per")))
   
   return(data_ve)
   
 }
 
-########## Fig. 5, 6, 7 ##########
+########## Fig. 4, 5, 6 ##########
 
 # ve = 0.3
 data_0.05_0.3 <- read_surv_data(0.05, 0.3)
@@ -75,25 +115,24 @@ data_0.3 <- bind_rows(
   data_0.15_0.3)
 
 # 10 by 10
-fig.5 <- ggplot() +
+fig.4 <- ggplot() +
   geom_boxplot(
     data = data_0.3,
     aes(x = factor(`Per-contact transmisibility`),
         y = ve, fill = model), color = "black") +
   scale_fill_manual(
-    values = c("ve_hr" = "#8491B4FF", "ve_adj" = "#4DBBD599"),
+    values = c("ve_cox" = "#8491B4FF", "ve_per" = "#4DBBD599"),
     labels = c(
-      "ve_hr" = TeX("$\\hat{VE}_{S, HR}$"),
-      "ve_adj" = TeX(
-        "$1-(\\hat{r}_{pla} / \\hat{r}_{vac}) \\cdot (1-\\hat{VE}_{S, HR})$"))) +
+      "ve_cox" = TeX("$\\widehat{v}^*$"),
+      "ve_per" = TeX("$\\widehat{v}$"))) +
   labs(x = "Per-contact transmisibility (p)",
        y = "VE estimate",
        fill = NULL) +
   geom_hline(yintercept = 0.3, color = "#DC0000FF") +
   theme_minimal() + 
   theme(
-    legend.position = c(0.8, 0.9),
-    legend.text = element_text(size = 20),
+    legend.position = "bottom",
+    legend.text = element_text(size = 30),
     axis.line = element_line(colour = "black"),
     panel.background = element_blank(),
     axis.title.x = element_text(size = 25),
@@ -112,25 +151,24 @@ data_0.6 <- bind_rows(
   data_0.15_0.6)
 
 # 10 by 10
-fig.6 <- ggplot() +
+fig.5 <- ggplot() +
   geom_boxplot(
     data = data_0.6,
     aes(x = factor(`Per-contact transmisibility`),
         y = ve, fill = model), color = "black",) +
   scale_fill_manual(
-    values = c("ve_hr" = "#00A087FF", "ve_adj" = "#91D1C299"),
+    values = c("ve_cox" = "#00A087FF", "ve_per" = "#91D1C299"),
     labels = c(
-      "ve_hr" = TeX("$\\hat{VE}_{S, HR}$"),
-      "ve_adj" = TeX(
-        "$1-(\\hat{r}_{pla} / \\hat{r}_{vac}) \\cdot (1-\\hat{VE}_{S, HR})$"))) +
+      "ve_cox" = TeX("$\\widehat{v}^*$"),
+      "ve_per" = TeX("$\\widehat{v}$"))) +
   labs(x = "Per-contact transmisibility (p)",
        y = "VE estimate",
        fill = NULL) +
   geom_hline(yintercept = 0.6, color = "red") +
   theme_minimal() + 
   theme(
-    legend.position = c(0.8, 0.9),
-    legend.text = element_text(size = 20),
+    legend.position = "bottom",
+    legend.text = element_text(size = 30),
     axis.line = element_line(colour = "black"),
     panel.background = element_blank(),
     axis.title.x = element_text(size = 25),
@@ -155,19 +193,18 @@ fig.6 <- ggplot() +
     aes(x = factor(`Per-contact transmisibility`),
         y = ve, fill = model), color = "black") +
   scale_fill_manual(
-    values = c("ve_hr" = "#7E6148FF", "ve_adj" = "#B09C8599"),
+    values = c("ve_cox" = "#7E6148FF", "ve_per" = "#B09C8599"),
     labels = c(
-      "ve_hr" = TeX("$\\hat{VE}_{S, HR}$"),
-      "ve_adj" = TeX(
-        "$1-(\\hat{r}_{pla} / \\hat{r}_{vac}) \\cdot (1-\\hat{VE}_{S, HR})$"))) +
+      "ve_cox" = TeX("$\\widehat{v}^*$"),
+      "ve_per" = TeX("$\\widehat{v}$"))) +
   labs(x = "Per-contact transmisibility (p)",
        y = "VE estimate",
        fill = NULL) +
   geom_hline(yintercept = 0.9, color = "red") +
   theme_minimal() + 
   theme(
-    legend.position = c(0.8, 0.9),
-    legend.text = element_text(size = 20),
+    legend.position = "bottom",
+    legend.text = element_text(size = 30),
     axis.line = element_line(colour = "black"),
     panel.background = element_blank(),
     axis.title.x = element_text(size = 25),
@@ -175,22 +212,22 @@ fig.6 <- ggplot() +
     axis.text.x = element_text(size = 20),
     axis.text.y = element_text(size = 20)) 
 
-########## Fig. 4 ##########
+########## Fig. 7 ##########
 
 data_005 <- tibble(
-  ve = seq(0.01, 0.99, by = 0.01),
-  r = r(0.05, ve)/r(0.05, 0),
-  ve_hr = 1 - (1 - ve) * r)
+  ve_per = seq(0.05, 0.95, by = 0.01),
+  r = exposure_prob_ratio(0.05, ve_per),
+  ve_cox = 1 - (1 - ve_per) * r)
 
 data_01 <- tibble(
-  ve = seq(0.01, 0.99, by = 0.01),
-  r = r(0.1, ve)/r(0.1, 0),
-  ve_hr = 1 - (1 - ve) * r)
+  ve_per = seq(0.05, 0.95, by = 0.01),
+  r = exposure_prob_ratio(0.1, ve_per),
+  ve_cox = 1 - (1 - ve_per) * r)
 
 data_015 <- tibble(
-  ve = seq(0.01, 0.99, by = 0.01),
-  r = r(0.15, ve)/r(0.15, 0),
-  ve_hr = 1 - (1 - ve) * r)
+  ve_per = seq(0.05, 0.95, by = 0.01),
+  r = exposure_prob_ratio(0.15, ve_per),
+  ve_cox = 1 - (1 - ve_per) * r)
 
 data <- bind_rows(
   data_005 %>% mutate(p = 0.05),
@@ -199,8 +236,8 @@ data <- bind_rows(
 )
 
 # 12 by 8
-fig.4 <- data |>
-  ggplot(aes(x = ve, y = ve_hr / ve, color = factor(p))) +
+fig.7 <- data |>
+  ggplot(aes(x = ve_per, y = ve_cox / ve_per, color = factor(p))) +
   geom_line(linewidth = 2) +
   scale_color_manual(
     name = "Per-contact transmissibility (p)",
@@ -208,9 +245,13 @@ fig.4 <- data |>
     labels = c("0.05", "0.1", "0.15")
   ) +
   labs(
-    x = TeX("${VE}$\\in$ (0, 1)"),
-    y = TeX("${VE}^{*}_{S,HR}$/${VE}$"),
+    x = TeX("${v}$\\in$ (0.05, 0.95)"),
+    y = TeX("${v}^{*}$/${v}$"),
     color = NULL
+  ) +
+  scale_x_continuous(
+    limits = c(0.05, 0.95),
+    breaks = seq(0.05, 0.95, by = 0.1)  
   ) +
   theme_minimal() +
   theme(
@@ -222,3 +263,18 @@ fig.4 <- data |>
     axis.text.x = element_text(size = 20),
     axis.text.y = element_text(size = 20)
   )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

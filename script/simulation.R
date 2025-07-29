@@ -1,7 +1,9 @@
 ########## library ##########
+
 library(tidyverse)
 
 ########## parameters ##########
+
 # 0.01 (fixed)
 m <- 0.01
 # 10000 (fixed)
@@ -9,19 +11,22 @@ n <- 10000
 # {0.05, 0.1, 0.15}
 p <- 0.15
 # {0.3, 0.6, 0.9}
-ve <- 0.3
+ve <- 0.9
 # 180 (fixed)
 trial_length <- 180
 # 500 (fixed)
 session <- 500
 
 ########## tibble for the result ##########
+
 result <- tibble(
-  VE_HR = as.numeric(),
+  ve_cox = as.numeric(),
 )
 
 ########## simulation ##########
+
 # 500 simulations
+
 for (i in 1:session) {
   
   print(i)
@@ -75,8 +80,8 @@ for (i in 1:session) {
     participants_data <- participants_data |> 
       mutate(
         infection_prob = case_when(
-          vaccine == 0 ~ 1 - (1 - p)^inf_window,
-          vaccine == 1 ~ 1 - (1 - p * (1 - ve))^inf_window,
+          vaccine == 0 ~ 1 - (1 - p) ^ inf_window,
+          vaccine == 1 ~ 1 - (1 - p * (1 - ve)) ^ inf_window,
           TRUE ~ 0),
         newly_infected = rbinom(n(), 1, infection_prob),
         state = if_else(state == 0 & newly_infected == 1, 1, state)
@@ -94,7 +99,7 @@ for (i in 1:session) {
   
   # add the hazard ratio to the result tibble
   result <- result |> 
-    add_row(VE_HR = hr)
+    add_row(ve_cox = 1 - hr)
   
 }
 
