@@ -123,8 +123,8 @@ fig.4 <- ggplot() +
   scale_fill_manual(
     values = c("ve_cox" = "#8491B4FF", "ve_per" = "#4DBBD599"),
     labels = c(
-      "ve_cox" = TeX("$\\widehat{v}^*$"),
-      "ve_per" = TeX("$\\widehat{v}$"))) +
+      "ve_cox" = TeX("Cox-based, $\\widehat{v}^*$ "),
+      "ve_per" = TeX("per-contact, $\\widehat{v}$ "))) +
   labs(x = "Per-contact transmisibility (p)",
        y = "VE estimate",
        fill = NULL) +
@@ -159,8 +159,8 @@ fig.5 <- ggplot() +
   scale_fill_manual(
     values = c("ve_cox" = "#00A087FF", "ve_per" = "#91D1C299"),
     labels = c(
-      "ve_cox" = TeX("$\\widehat{v}^*$"),
-      "ve_per" = TeX("$\\widehat{v}$"))) +
+      "ve_cox" = TeX("Cox-based, $\\widehat{v}^*$ "),
+      "ve_per" = TeX("per-contact, $\\widehat{v}$ "))) +
   labs(x = "Per-contact transmisibility (p)",
        y = "VE estimate",
        fill = NULL) +
@@ -195,8 +195,8 @@ fig.6 <- ggplot() +
   scale_fill_manual(
     values = c("ve_cox" = "#7E6148FF", "ve_per" = "#B09C8599"),
     labels = c(
-      "ve_cox" = TeX("$\\widehat{v}^*$"),
-      "ve_per" = TeX("$\\widehat{v}$"))) +
+      "ve_cox" = TeX("Cox-based, $\\widehat{v}^*$ "),
+      "ve_per" = TeX("per-contact, $\\widehat{v}$ "))) +
   labs(x = "Per-contact transmisibility (p)",
        y = "VE estimate",
        fill = NULL) +
