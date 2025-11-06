@@ -2,6 +2,7 @@
 
 library(tidyverse)
 library(latex2exp)
+library(ggpubr)
 
 ########## function to calculate equation (15) ##########
 
@@ -132,7 +133,7 @@ fig.4 <- ggplot() +
   theme_minimal() + 
   theme(
     legend.position = "bottom",
-    legend.text = element_text(size = 30),
+    legend.text = element_text(size = 20),
     axis.line = element_line(colour = "black"),
     panel.background = element_blank(),
     axis.title.x = element_text(size = 25),
@@ -161,14 +162,14 @@ fig.5 <- ggplot() +
     labels = c(
       "ve_cox" = TeX("Cox-based, $\\widehat{v}^*$ "),
       "ve_per" = TeX("per-contact, $\\widehat{v}$ "))) +
-  labs(x = "Per-contact transmisibility (p)",
-       y = "VE estimate",
+  labs(x = "",
+       y = "",
        fill = NULL) +
   geom_hline(yintercept = 0.6, color = "red") +
   theme_minimal() + 
   theme(
     legend.position = "bottom",
-    legend.text = element_text(size = 30),
+    legend.text = element_text(size = 20),
     axis.line = element_line(colour = "black"),
     panel.background = element_blank(),
     axis.title.x = element_text(size = 25),
@@ -197,14 +198,14 @@ fig.6 <- ggplot() +
     labels = c(
       "ve_cox" = TeX("Cox-based, $\\widehat{v}^*$ "),
       "ve_per" = TeX("per-contact, $\\widehat{v}$ "))) +
-  labs(x = "Per-contact transmisibility (p)",
-       y = "VE estimate",
+  labs(x = "",
+       y = "",
        fill = NULL) +
   geom_hline(yintercept = 0.9, color = "red") +
   theme_minimal() + 
   theme(
     legend.position = "bottom",
-    legend.text = element_text(size = 30),
+    legend.text = element_text(size = 20),
     axis.line = element_line(colour = "black"),
     panel.background = element_blank(),
     axis.title.x = element_text(size = 25),
@@ -266,11 +267,15 @@ fig.7 <- data |>
 
 
 
-
-
-
-
-
+# 17 by 6
+ggarrange(
+  fig.4,
+  fig.5,
+  fig.6,
+  labels = c("A", "B", "C"),
+  ncol = 3,
+  nrow = 1,
+  font.label = list(size = 25))
 
 
 
