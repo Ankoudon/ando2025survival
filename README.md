@@ -1,10 +1,10 @@
 <img src="graph/featured.png" align="left" width="400" height="200" alt="DAG"/>
 
-# Ando, H., O’Malley, A. J., & Nishi, A. (2025). Quantifying Bias in Vaccine Efficacy Estimates Due to Temporally Correlated Exposure
+# Ando, H., O’Malley, A. J., & Nishi, A. (2026). Temporal dependence in exposure and hazard-based infectious disease interventions.
 
 ---
 
-This repository contains the simulation framework and visualization tools used to assess the impact of temporally correlated exposure on vaccine efficacy estimates. The study is based on a stochastic infectious window model, designed to capture dynamic contact and exposure patterns in infectious disease clinical trials. Resources provided here allow for full replication of the main results, including the generation of all figures.
+This repository contains the simulation framework and visualization tools used to assess the impact of temporally correlated exposure on HR. Resources provided here allow for full replication of the main results, including the generation of all figures.
 
 ---
 
@@ -40,7 +40,7 @@ Generates visualizations from simulated data.
 
 If you use this code or data, please cite the original paper:
 
-**Ando, H., O’Malley, A. J., & Nishi, A. (2025). Quantifying Bias in Vaccine Efficacy Estimates Due to Temporally Correlated Exposure.**
+**Ando, H., O’Malley, A. J., & Nishi, A. (2026). Temporal dependence in exposure and hazard-based infectious disease interventions.**
 
 ---
 

@@ -4,18 +4,18 @@ library(tidyverse)
 
 ########## parameters ##########
 
-# 0.01 (fixed)
-m <- 0.01
+# 0.05 (fixed)
+m <- 0.05
 # 10000 (fixed)
 n <- 10000
 # {0.05, 0.1, 0.15}
 p <- 0.15
 # {0.3, 0.6, 0.9}
 ve <- 0.9
-# 180 (fixed)
-trial_length <- 180
-# 500 (fixed)
-session <- 500
+# 90 (fixed)
+trial_length <- 90
+# 200 (fixed)
+session <- 200
 
 ########## tibble for the result ##########
 
@@ -25,7 +25,7 @@ result <- tibble(
 
 ########## simulation ##########
 
-# 500 simulations
+# 200 simulations
 
 for (i in 1:session) {
   
@@ -52,13 +52,6 @@ for (i in 1:session) {
       mutate(
         day = if_else(state == 0, t, day))
     
-    # update the number of exposures
-    participants_data <- participants_data |> mutate(
-      inf_window_periods = map2(inf_window_periods,
-                                participant_id, ~{.x[.x >= t]}),
-      inf_window = map_int(inf_window_periods, length)  
-    )
-    
     # extract the IDs of participants who are susceptible
     suseptible_id <- participants_data |>
       filter(state == 0) |>
@@ -77,6 +70,13 @@ for (i in 1:session) {
         ~ append(.x, t + rgeom(1, 1/3))
       )
     
+    # update the number of exposures
+    participants_data <- participants_data |> mutate(
+      inf_window_periods = map2(inf_window_periods,
+                                participant_id, ~{.x[.x >= t]}),
+      inf_window = map_int(inf_window_periods, length)  
+    )
+    
     participants_data <- participants_data |> 
       mutate(
         infection_prob = case_when(
@@ -90,9 +90,10 @@ for (i in 1:session) {
   }
   
   # calculate the hazard ratio using Cox hazard models
+  cox_data <- participants_data |> filter(day >= 30) 
   cox_model <- survival::coxph(
     survival::Surv(day, state) ~ vaccine,
-    data = participants_data)
+    data = cox_data)
   
   # extract the hazard ratio for the vaccine group
   hr <- exp(coef(cox_model))[[1]]
@@ -104,5 +105,5 @@ for (i in 1:session) {
 }
 
 # save the result
-write_csv(result, paste0("~/desktop/research/cox-correlated-exposure-bias/result/p_",
+write_csv(result, paste0("~/desktop/ando2025survival/result/p_",
                          p, "_ve_", ve, "_cox_bias.csv"))

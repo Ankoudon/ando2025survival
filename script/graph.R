@@ -25,7 +25,7 @@ exposure_prob_ratio <- function(p, ve) {
   sum_num <- sum_num + pgeom(1, 1 / 3, lower.tail = FALSE) * (1 - p_ve) ^ (2)
   sum_deno <- sum_deno + pgeom(1, 1 / 3, lower.tail = FALSE) * (1 - p) ^ (2)
   
-  for (i in 2:10) {
+  for (i in 2:90) {
     
     probability <- pgeom(i, 1 / 3, lower.tail = FALSE) * (1 - p_ve) ^ (i + 1)
     sum_num <- sum_num + probability
@@ -57,7 +57,7 @@ read_surv_data <- function(p, ve) {
   
   data <- read_csv(
     paste0(
-      "~/desktop/research/cox-correlated-exposure-bias/result/p_", p,
+      "~/desktop/ando2025survival/result/p_", p,
       "_ve_", ve, "_cox_bias.csv"))
   
   # data for ve_cox
@@ -124,10 +124,10 @@ fig.4 <- ggplot() +
   scale_fill_manual(
     values = c("ve_cox" = "#8491B4FF", "ve_per" = "#4DBBD599"),
     labels = c(
-      "ve_cox" = TeX("Cox-based, $\\widehat{v}^*$ "),
-      "ve_per" = TeX("per-contact, $\\widehat{v}$ "))) +
-  labs(x = "Per-contact transmisibility (p)",
-       y = "VE estimate",
+      "ve_cox" = "1-HR ",
+      "ve_per" = "(average) per-exposure effect, v")) +
+  labs(x = "Per-contact infection probability (p)",
+       y = "Estimate",
        fill = NULL) +
   geom_hline(yintercept = 0.3, color = "#DC0000FF") +
   theme_minimal() + 
@@ -160,8 +160,8 @@ fig.5 <- ggplot() +
   scale_fill_manual(
     values = c("ve_cox" = "#00A087FF", "ve_per" = "#91D1C299"),
     labels = c(
-      "ve_cox" = TeX("Cox-based, $\\widehat{v}^*$ "),
-      "ve_per" = TeX("per-contact, $\\widehat{v}$ "))) +
+      "ve_cox" = "1-HR ",
+      "ve_per" = "(average) per-exposure effect, v")) +
   labs(x = "",
        y = "",
        fill = NULL) +
@@ -196,8 +196,8 @@ fig.6 <- ggplot() +
   scale_fill_manual(
     values = c("ve_cox" = "#7E6148FF", "ve_per" = "#B09C8599"),
     labels = c(
-      "ve_cox" = TeX("Cox-based, $\\widehat{v}^*$ "),
-      "ve_per" = TeX("per-contact, $\\widehat{v}$ "))) +
+      "ve_cox" = "1-HR ",
+      "ve_per" = "(average) per-exposure effect, v")) +
   labs(x = "",
        y = "",
        fill = NULL) +
@@ -241,13 +241,13 @@ fig.7 <- data |>
   ggplot(aes(x = ve_per, y = ve_cox / ve_per, color = factor(p))) +
   geom_line(linewidth = 2) +
   scale_color_manual(
-    name = "Per-contact transmissibility (p)",
+    name = "Per-exposure infection probability (p)",
     values = c("#AD002AFF", "#00468BFF", "#FDAF91FF"),
     labels = c("0.05", "0.1", "0.15")
   ) +
   labs(
-    x = TeX("${v}$\\in$ (0.05, 0.95)"),
-    y = TeX("${v}^{*}$/${v}$"),
+    x = TeX("(average) per-exposure effect, ${v}$\\in$ (0.05, 0.95)"),
+    y = TeX("${(1-HR)}$ / ${v}$"),
     color = NULL
   ) +
   scale_x_continuous(
@@ -265,9 +265,7 @@ fig.7 <- data |>
     axis.text.y = element_text(size = 20)
   )
 
-
-
-# 17 by 6
+# 20 by 6
 ggarrange(
   fig.4,
   fig.5,
